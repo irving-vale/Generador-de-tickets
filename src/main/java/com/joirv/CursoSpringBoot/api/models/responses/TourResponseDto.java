@@ -1,0 +1,20 @@
+package com.joirv.CursoSpringBoot.api.models.responses;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.io.Serializable;
+import java.util.Set;
+import java.util.UUID;
+
+@NoArgsConstructor
+@Data
+@AllArgsConstructor
+@Builder
+public class TourResponseDto implements Serializable {
+    private Long id;
+    private Set<UUID> ticketsIds;
+    private Set<UUID> reservationIds;
+}

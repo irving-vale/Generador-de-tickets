@@ -1,0 +1,25 @@
+# IMAGEN MODELO
+FROM eclipse-temurin:21.0.7_6-jdk
+
+#DEFINIR DIRECTORIO RAIZ
+WORKDIR /app
+
+#COPIAR ARCHIVOS DENTRO DEL CONTENEDOR
+COPY  ./pom.xml     /app
+COPY  ./.mvn    /app/.mvn
+COPY  ./mvnw    /app
+
+# DESCARGAR LAS DEPENDENCIAS DE MAVEN
+RUN ./mvnw dependency:go-offline -B
+
+# COPIAR EL CODIGO FUENTE DENTRO DEL CONTENEDOR
+COPY ./src  /app/src
+
+# CONSTRUIR NUETSRA APLICACION
+RUN ./mvnw package -DskipTests -B
+
+# EXPONER PUERTO
+EXPOSE 8080
+
+# COMANDO PARA EJECUTAR LA APLICACION CUANDO EL CONTENEDOR SE INICIE
+ENTRYPOINT ["java", "-jar", "target/CursoSpringBoot-0.0.1-SNAPSHOT.jar"]
