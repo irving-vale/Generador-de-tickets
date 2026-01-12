@@ -182,10 +182,6 @@ public class TourService implements ITourService {
 
     }
 
-    private void totalTour(CustomerEntity customer) {
-        var totalTourCustumer= customer.getTotalTours();
-        customer.setTotalTours(totalTourCustumer + 1);
-        this.customerRepository.save(customer);
-    }
+
 
 }

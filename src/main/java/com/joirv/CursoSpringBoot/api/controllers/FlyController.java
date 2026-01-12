@@ -33,7 +33,7 @@ public class FlyController {
 	@GetMapping("/readLessPrice")
 	public ResponseEntity<ApiResponseDto<List<FlyResponseDto>>> readLessPrice(@RequestParam Integer page, @RequestParam Integer size, @RequestParam(required = false) SortType sortType, @RequestParam BigDecimal price) {
 		if (sortType == null) {
-			sortType = SortType.NONE; // Default sort type if not provided
+			sortType = SortType.NONE;
 		}
 		return ResponseEntity.ok(flyService.readLessPrice(page, size, sortType, price));
 	}
