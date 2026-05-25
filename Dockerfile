@@ -1,6 +1,12 @@
 # IMAGEN MODELO
 FROM eclipse-temurin:21.0.7_6-jdk
-
+# --- AQUÍ INSTALAMOS NODE 22 (LTS) ---
+# Usamos el script oficial de NodeSource para Debian (que es la base de temurin)
+RUN apt-get update && apt-get install -y curl && \
+    curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
+    apt-get install -y nodejs && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+# -------------------------------------
 #DEFINIR DIRECTORIO RAIZ
 WORKDIR /app
 
@@ -18,8 +24,4 @@ COPY ./src  /app/src
 # CONSTRUIR NUETSRA APLICACION
 RUN ./mvnw package -DskipTests -B
 
-# EXPONER PUERTO
-EXPOSE 8080
 
-# COMANDO PARA EJECUTAR LA APLICACION CUANDO EL CONTENEDOR SE INICIE
-ENTRYPOINT ["java", "-jar", "target/CursoSpringBoot-0.0.1-SNAPSHOT.jar"]

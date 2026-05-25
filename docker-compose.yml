@@ -16,3 +16,18 @@
       ports:
         - "5432:5432"
 
+    app:
+      build: .
+      container_name: sprinboot_dev
+      ports:
+        - "8080:8080"
+      volumes:
+        - ./:/app:Z
+        - ~/.m2:/root/.m2:Z
+      entrypoint: ["/bin/bash", "-c", "chmod +x mvnw && ./mvnw spring-boot:run"]
+      environment:
+        - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/best_travel
+        - SPRING_DATASOURCE_USERNAME=alejandro
+        - SPRING_DATASOURCE_PASSWORD=debuggeandoideas
+      depends_on:
+        - db
