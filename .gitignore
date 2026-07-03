@@ -33,4 +33,4 @@ build/
 .vscode/
 
 ### Proyecto ###
-docker/.env
+.env

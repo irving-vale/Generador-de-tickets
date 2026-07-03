@@ -23,7 +23,8 @@ public class FlyController {
 	private final FlyService flyService;
 
 	@GetMapping("/findAll")
-	public ResponseEntity<ApiResponseDto<List<FlyResponseDto>>> findAllPagination(@RequestParam Integer page, @RequestParam Integer size, @RequestParam(required = false) SortType sortType) {
+	public ResponseEntity<ApiResponseDto<List<FlyResponseDto>>> findAllPagination(
+			@RequestParam Integer page, @RequestParam Integer size, @RequestParam(required = false) SortType sortType) {
 		if (sortType == null) {
 			sortType = SortType.NONE; // Default sort type if not provided
 		}

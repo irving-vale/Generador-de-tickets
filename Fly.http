@@ -1,0 +1,14 @@
+# ==========================================
+# 1. DEFINICIÓN DE VARIABLES GLOBALES
+# ==========================================
+@hostname = localhost
+@port = 8080
+@host = http://{{hostname}}:{{port}}
+@user = {{username}}
+@password = {{password}}
+@page = 1
+@size = 100
+
+### PEticion Get ###
+{{host}}/api/v1/fly/findAll?page={{page}}&size={{size}}
+Authorization: Basic {{user}} {{password}}
