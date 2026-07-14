@@ -25,7 +25,10 @@ jobs:
           distribution: 'temurin'
           cache: 'maven' # Guarda en caché tus librerías para que sea ultra rápido
 
-      # Paso C: El robot corre tus comandos de Maven (compilar y ejecutar tus tests)
-      - name: Compilar y Ejecutar Pruebas Unitarias
-        run: mvn clean package -Dtest=!CursoSpringBootApplicationTests
+      # 🚀 Compila, genera el reporte de JaCoCo y manda la cobertura a SonarCloud
+      - name: Compilar, Probar y Analizar con Sonar
+        run: mvn clean verify sonar:sonar -Dtest=!CursoSpringBootApplicationTests
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
