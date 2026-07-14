@@ -47,4 +47,11 @@ jobs:
       # Paso C: El robot corre tus comandos de Maven (compilar y ejecutar tus tests)
       - name: Compilar y Ejecutar Pruebas Unitarias
         run: mvn clean package
+        env:
+          # Aquí le decimos a Spring Boot que se conecte al contenedor de GitHub
+          SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/best_travel
+          SPRING_DATASOURCE_USERNAME: alejandro
+          SPRING_DATASOURCE_PASSWORD: debuggeandoideas
+          # Desactivamos docker-compose automático en GitHub para que no intente levantar otra cosa
+          SPRING_DOCKER_COMPOSE_ENABLED: false
 
