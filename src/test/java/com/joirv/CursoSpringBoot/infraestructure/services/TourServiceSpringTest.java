@@ -116,10 +116,10 @@ public class TourServiceSpringTest {
         hotelRequests.add(hotelRequest);
         request.setIdHotels(hotelRequests);
 
-        // Mock repository responses
-        when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
-        when(flyRepository.findById(flyId)).thenReturn(Optional.of(fly));
-        when(hotelRepository.findById(hotelId)).thenReturn(Optional.of(hotel));
+        // Mock entityLoader responses
+        when(entityLoader.findCustumerEntityById(customerId)).thenReturn(customer);
+        when(entityLoader.findFlyEntityById(flyId)).thenReturn(fly);
+        when(entityLoader.findHotelEntityById(hotelId)).thenReturn(hotel);
 
         // Mock ticket and reservation creation
         Set<TicketEntity> tickets = new HashSet<>();
@@ -150,22 +150,28 @@ public class TourServiceSpringTest {
         when(tourHelper.createTickets(any(), any())).thenReturn(tickets);
         when(tourHelper.createReservations(any(), any())).thenReturn(reservations);
 
-        // Mock tour entity creation and save
+        // Mock tour entity creation and save via TourEntityBuilder
         TourEntity tourEntity = TourEntity.builder()
                 .id(1L)
                 .customer(customer)
                 .tickets(tickets)
                 .reservations(reservations)
                 .build();
-        when(tourRepository.save(any(TourEntity.class))).thenReturn(tourEntity);
+        when(tourEntityBuilder.tourEntityBuilderAndSave(any(), any(), any(), any())).thenReturn(tourEntity);
 
-        // Mock mapper response
+        // Mock the response from tourEntityBuilder.toTourResponseDto
         TourResponseDto tourResponseDto = TourResponseDto.builder()
                 .id(1L)
                 .ticketsIds(tickets.stream().map(TicketEntity::getId).collect(Collectors.toSet()))
                 .reservationIds(reservations.stream().map(ReservationEntity::getId).collect(Collectors.toSet()))
                 .build();
-        when(tourMapper.toTourResponseDto(any(TourEntity.class))).thenReturn(tourResponseDto);
+        ApiResponseDto<TourResponseDto> apiResponse = ApiResponseDto.<TourResponseDto>builder()
+                .status("success")
+                .statusCode(200)
+                .message("Tour created successfully")
+                .data(tourResponseDto)
+                .build();
+        when(tourEntityBuilder.toTourResponseDto(tourEntity)).thenReturn(apiResponse);
 
         // When
         ApiResponseDto<TourResponseDto> response = tourService.create(request);
@@ -180,13 +186,13 @@ public class TourServiceSpringTest {
         assertFalse(response.getData().getReservationIds().isEmpty());
 
         // Verify interactions
-        verify(customerRepository).findById(customerId);
-        verify(flyRepository).findById(flyId);
-        verify(hotelRepository).findById(hotelId);
+        verify(entityLoader).findCustumerEntityById(customerId);
+        verify(entityLoader).findFlyEntityById(flyId);
+        verify(entityLoader).findHotelEntityById(hotelId);
         verify(tourHelper).createTickets(any(), any());
         verify(tourHelper).createReservations(any(), any());
-        verify(tourRepository).save(any(TourEntity.class));
-        verify(tourMapper).toTourResponseDto(any(TourEntity.class));
+        verify(tourEntityBuilder).tourEntityBuilderAndSave(any(), any(), any(), any());
+        verify(tourEntityBuilder).toTourResponseDto(tourEntity);
     }
 
     @Test
@@ -237,8 +243,8 @@ public class TourServiceSpringTest {
                 .reservationIds(reservations.stream().map(ReservationEntity::getId).collect(Collectors.toSet()))
                 .build();
 
-        // Mock repository and mapper
-        when(tourRepository.findById(tourId)).thenReturn(Optional.of(tourEntity));
+        // Mock entityLoader and mapper
+        when(entityLoader.findTourEntityById(tourId)).thenReturn(tourEntity);
         when(tourMapper.toTourResponseDto(tourEntity)).thenReturn(tourResponseDto);
 
         // When
@@ -252,7 +258,7 @@ public class TourServiceSpringTest {
         assertEquals(tourId, response.getData().getId());
 
         // Verify interactions
-        verify(tourRepository).findById(tourId);
+        verify(entityLoader).findTourEntityById(tourId);
         verify(tourMapper).toTourResponseDto(tourEntity);
     }
 
@@ -357,14 +363,14 @@ public class TourServiceSpringTest {
                 .reservationIds(newReservations.stream().map(ReservationEntity::getId).collect(Collectors.toSet()))
                 .build();
 
-        // Mock repository responses
-        when(tourRepository.findById(tourId)).thenReturn(Optional.of(existingTour));
-        when(customerRepository.findById(customerId)).thenReturn(Optional.of(newCustomer));
-        when(flyRepository.findById(flyId)).thenReturn(Optional.of(newFly));
-        when(hotelRepository.findById(hotelId)).thenReturn(Optional.of(newHotel));
+        // Mock entityLoader responses
+        when(entityLoader.findTourEntityById(tourId)).thenReturn(existingTour);
+        when(entityLoader.findCustumerEntityById(customerId)).thenReturn(newCustomer);
+        when(entityLoader.findFlyEntityById(flyId)).thenReturn(newFly);
+        when(entityLoader.findHotelEntityById(hotelId)).thenReturn(newHotel);
         when(tourHelper.createTickets(any(), any())).thenReturn(newTickets);
         when(tourHelper.createReservations(any(), any())).thenReturn(newReservations);
-        when(tourRepository.save(any(TourEntity.class))).thenReturn(updatedTour);
+        when(tourEntityBuilder.tourEntityBuilderAndSave(any(), any(), any(), any())).thenReturn(updatedTour);
         when(tourMapper.toTourResponseDto(updatedTour)).thenReturn(tourResponseDto);
 
         // When
@@ -378,13 +384,13 @@ public class TourServiceSpringTest {
         assertEquals(tourId, response.getData().getId());
 
         // Verify interactions
-        verify(tourRepository).findById(tourId);
-        verify(customerRepository).findById(customerId);
-        verify(flyRepository).findById(flyId);
-        verify(hotelRepository).findById(hotelId);
+        verify(entityLoader).findTourEntityById(tourId);
+        verify(entityLoader).findCustumerEntityById(customerId);
+        verify(entityLoader).findFlyEntityById(flyId);
+        verify(entityLoader).findHotelEntityById(hotelId);
         verify(tourHelper).createTickets(any(), any());
         verify(tourHelper).createReservations(any(), any());
-        verify(tourRepository).save(any(TourEntity.class));
+        verify(tourEntityBuilder).tourEntityBuilderAndSave(any(), any(), any(), any());
         verify(tourMapper).toTourResponseDto(updatedTour);
     }
 
@@ -406,8 +412,8 @@ public class TourServiceSpringTest {
                 .reservations(new HashSet<>())
                 .build();
 
-        // Mock repository response
-        when(tourRepository.findById(tourId)).thenReturn(Optional.of(tourEntity));
+        // Mock entityLoader and repository
+        when(entityLoader.findTourEntityById(tourId)).thenReturn(tourEntity);
         doNothing().when(tourRepository).delete(tourEntity);
 
         // When
@@ -419,7 +425,7 @@ public class TourServiceSpringTest {
         assertEquals("Tour deleted successfully", response.getMessage());
 
         // Verify interactions
-        verify(tourRepository).findById(tourId);
+        verify(entityLoader).findTourEntityById(tourId);
         verify(tourRepository).delete(tourEntity);
     }
 
@@ -495,9 +501,9 @@ public class TourServiceSpringTest {
                 .reservationIds(new HashSet<>())
                 .build();
 
-        // Mock repository responses
-        when(tourRepository.findById(tourId)).thenReturn(Optional.of(tourEntity));
-        when(flyRepository.findById(flyId)).thenReturn(Optional.of(flyEntity));
+        // Mock entityLoader and other dependencies
+        when(entityLoader.findTourEntityById(tourId)).thenReturn(tourEntity);
+        when(entityLoader.findFlyEntityById(flyId)).thenReturn(flyEntity);
         when(tourHelper.createTickets(any(), any())).thenReturn(newTickets);
         when(tourRepository.save(any(TourEntity.class))).thenReturn(updatedTourEntity);
         when(tourMapper.toTourResponseDto(updatedTourEntity)).thenReturn(tourResponseDto);
@@ -514,8 +520,8 @@ public class TourServiceSpringTest {
         assertEquals(tourEntity, newTicket.getTour(), "El ticket no tiene asignado el tour correctamente");
 
         // Verify interactions
-        verify(tourRepository).findById(tourId);
-        verify(flyRepository).findById(flyId);
+        verify(entityLoader).findTourEntityById(tourId);
+        verify(entityLoader).findFlyEntityById(flyId);
         verify(tourHelper).createTickets(any(), any());
         verify(tourRepository).save(any(TourEntity.class));
         verify(tourMapper).toTourResponseDto(updatedTourEntity);
@@ -584,8 +590,8 @@ public class TourServiceSpringTest {
                 .reservationIds(new HashSet<>())
                 .build();
 
-        // Mock repository responses
-        when(tourRepository.findById(tourId)).thenReturn(Optional.of(tourEntity));
+        // Mock entityLoader and repository
+        when(entityLoader.findTourEntityById(tourId)).thenReturn(tourEntity);
         when(tourRepository.save(any(TourEntity.class))).thenReturn(updatedTourEntity);
         when(tourMapper.toTourResponseDto(updatedTourEntity)).thenReturn(tourResponseDto);
 
@@ -599,7 +605,7 @@ public class TourServiceSpringTest {
         assertNotNull(response.getData());
 
         // Verify interactions
-        verify(tourRepository).findById(tourId);
+        verify(entityLoader).findTourEntityById(tourId);
         verify(tourRepository).save(any(TourEntity.class));
         verify(tourMapper).toTourResponseDto(updatedTourEntity);
 
@@ -679,8 +685,8 @@ public class TourServiceSpringTest {
                 .build();
 
         // Mocks
-        when(tourRepository.findById(tourId)).thenReturn(Optional.of(tourEntity));
-        when(reservationRepository.findById(reservationId)).thenReturn(Optional.of(newReservation));
+        when(entityLoader.findTourEntityById(tourId)).thenReturn(tourEntity);
+        when(entityLoader.findReservationEntityById(reservationId)).thenReturn(newReservation);
         // Al guardar, simulamos que devuelve el tour con la nueva reserva añadida
         when(tourRepository.save(any(TourEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(tourMapper.toTourResponseDto(any(TourEntity.class))).thenReturn(tourResponseDto);
@@ -707,8 +713,8 @@ public class TourServiceSpringTest {
         assertTrue(response.getData().getReservationIds().contains(reservationId));
 
         // Verificar interacciones
-        verify(tourRepository).findById(tourId);
-        verify(reservationRepository).findById(reservationId);
+        verify(entityLoader).findTourEntityById(tourId);
+        verify(entityLoader).findReservationEntityById(reservationId);
         verify(tourRepository).save(any(TourEntity.class));
         verify(tourMapper).toTourResponseDto(any(TourEntity.class));
     }
@@ -791,7 +797,7 @@ public class TourServiceSpringTest {
                 .reservationIds(updatedReservations.stream().map(ReservationEntity::getId).collect(Collectors.toSet()))
                 .build();
 
-        // Mock repository responses
+        // Mock repository responses (service uses tourRepository.findById directly)
         when(tourRepository.findById(tourId)).thenReturn(Optional.of(tourEntity));
         when(tourRepository.save(any(TourEntity.class))).thenReturn(updatedTourEntity);
         when(tourMapper.toTourResponseDto(updatedTourEntity)).thenReturn(tourResponseDto);
