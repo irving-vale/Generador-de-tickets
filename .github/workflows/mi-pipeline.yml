@@ -1,57 +1,51 @@
 name: Validacion de Codigo Base
 
-# 1. ¿Cuándo se va a encender el robot?
 on:
   push:
-    branches: [ main, develop ] # Cada vez que hagas push a estas ramas
+    branches: [ main, develop ]
   pull_request:
-    branches: [ main, develop ] # O cada vez que abras un Pull Request
+    branches: [ main, develop ]
 
-# 2. ¿Qué va a hacer el robot cuando se encienda?
 jobs:
   compilar-y-probar:
-    runs-on: ubuntu-latest # Le pedimos a GitHub una máquina virtual con Linux limpia
+    runs-on: ubuntu-latest
 
-    # 💾 Levantamos la base de datos Postgres temporal en la nube de GitHub
     services:
-        postgres:
-          image: postgres:15
-          env:
-            POSTGRES_DB: best_travel
-            POSTGRES_USER: alejandro
-            POSTGRES_PASSWORD: debuggeandoideas
-          ports:
-            - 5432:5432
-          # Esperar a que postgres esté listo antes de arrancar los pasos
-          options: >-
-            --health-cmd pg_isready
-            --health-interval 10s
-            --health-timeout 5s
-            --health-retries 5
-
-    
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: best_travel
+          POSTGRES_USER: alejandro
+          POSTGRES_PASSWORD: debuggeandoideas
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
-      # Paso A: El robot clona tu código dentro de su máquina virtual
       - name: Descargar codigo del repositorio
         uses: actions/checkout@v4
 
-      # Paso B: El robot instala Java 21 en su máquina virtual
       - name: Instalar Java JDK 21
         uses: actions/setup-java@v4
         with:
           java-version: '21'
           distribution: 'temurin'
-          cache: 'maven' # Guarda en caché tus librerías para que sea ultra rápido
+          cache: 'maven'
 
-      # Paso C: El robot corre tus comandos de Maven (compilar y ejecutar tus tests)
       - name: Compilar y Ejecutar Pruebas Unitarias
         run: mvn clean package
         env:
-          # Aquí le decimos a Spring Boot que se conecte al contenedor de GitHub
-          SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/best_travel
+          # Inyectamos las propiedades usando el puente local de GitHub (127.0.0.1)
+          SPRING_DATASOURCE_URL: jdbc:postgresql://127.0.0.1:5432/best_travel
           SPRING_DATASOURCE_USERNAME: alejandro
           SPRING_DATASOURCE_PASSWORD: debuggeandoideas
-          # Desactivamos docker-compose automático en GitHub para que no intente levantar otra cosa
+          # Aseguramos que Flyway también use la base de datos efímera
+          SPRING_FLYWAY_URL: jdbc:postgresql://127.0.0.1:5432/best_travel
+          SPRING_FLYWAY_USER: alejandro
+          SPRING_FLYWAY_PASSWORD: debuggeandoideas
+          # Apagamos docker-compose para que no intente buscar archivos locales
           SPRING_DOCKER_COMPOSE_ENABLED: false
-
