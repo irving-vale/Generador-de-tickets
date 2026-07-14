@@ -14,6 +14,7 @@ import com.joirv.CursoSpringBoot.domain.entities.TourEntity;
 import com.joirv.CursoSpringBoot.domain.mappers.TourMapper;
 import com.joirv.CursoSpringBoot.domain.repositories.*;
 import com.joirv.CursoSpringBoot.infraestructure.helper.EntityLoader;
+import com.joirv.CursoSpringBoot.infraestructure.helper.TourEntityBuilder;
 import com.joirv.CursoSpringBoot.infraestructure.helper.TourHelper;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.Test;
@@ -63,6 +64,9 @@ public class TourServiceTest {
 
     @Mock
     private ReservationRepository reservationRepository;
+
+    @Mock
+    private TourEntityBuilder tourEntityBuilder;
 
     @InjectMocks
     private TourService tourService;
@@ -168,14 +172,22 @@ public class TourServiceTest {
                 .reservationIds(Set.of(reservation.getId()))
                 .build();
 
-        // When - Mock repository and mapper behavior
-        when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
-        when(flyRepository.findById(flyId)).thenReturn(Optional.of(fly));
-        when(hotelRepository.findById(hotelId)).thenReturn(Optional.of(hotel));
+        // Mock entityLoader responses
+        when(entityLoader.findCustumerEntityById(customerId)).thenReturn(customer);
+        when(entityLoader.findFlyEntityById(flyId)).thenReturn(fly);
+        when(entityLoader.findHotelEntityById(hotelId)).thenReturn(hotel);
         when(tourHelper.createTickets(any(), any())).thenReturn(tickets);
         when(tourHelper.createReservations(any(), any())).thenReturn(reservations);
-        when(tourRepository.save(any(TourEntity.class))).thenReturn(tourEntity);
-        when(tourMapper.toTourResponseDto(tourEntity)).thenReturn(tourResponseDto);
+        when(tourEntityBuilder.tourEntityBuilderAndSave(any(), any(), any(), any())).thenReturn(tourEntity);
+
+        // Mock the response from tourEntityBuilder.toTourResponseDto
+        ApiResponseDto<TourResponseDto> apiResponse = ApiResponseDto.<TourResponseDto>builder()
+                .status("success")
+                .statusCode(200)
+                .message("Tour created successfully")
+                .data(tourResponseDto)
+                .build();
+        when(tourEntityBuilder.toTourResponseDto(tourEntity)).thenReturn(apiResponse);
 
         // Execute
         ApiResponseDto<TourResponseDto> result = tourService.create(request);
@@ -187,13 +199,13 @@ public class TourServiceTest {
         assertEquals(tourResponseDto, result.getData());
 
         // Verify interactions
-        verify(customerRepository).findById(customerId);
-        verify(flyRepository).findById(flyId);
-        verify(hotelRepository).findById(hotelId);
+        verify(entityLoader).findCustumerEntityById(customerId);
+        verify(entityLoader).findFlyEntityById(flyId);
+        verify(entityLoader).findHotelEntityById(hotelId);
         verify(tourHelper).createTickets(any(), any());
         verify(tourHelper).createReservations(any(), any());
-        verify(tourRepository).save(any(TourEntity.class));
-        verify(tourMapper).toTourResponseDto(tourEntity);
+        verify(tourEntityBuilder).tourEntityBuilderAndSave(any(), any(), any(), any());
+        verify(tourEntityBuilder).toTourResponseDto(tourEntity);
     }
 
     @Test
@@ -206,7 +218,8 @@ public class TourServiceTest {
                 .build();
 
         // When
-        when(customerRepository.findById(request.getIdClient())).thenReturn(Optional.empty());
+        when(entityLoader.findCustumerEntityById(request.getIdClient()))
+                .thenThrow(new EntityNotFoundException("Customer not found"));
 
         // Then
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
@@ -239,8 +252,9 @@ public class TourServiceTest {
                 .build();
 
         // When
-        when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
-        when(flyRepository.findById(flyId)).thenReturn(Optional.empty());
+        when(entityLoader.findCustumerEntityById(customerId)).thenReturn(customer);
+        when(entityLoader.findFlyEntityById(flyId))
+                .thenThrow(new EntityNotFoundException("Fly not found"));
 
         // Then
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
@@ -274,8 +288,9 @@ public class TourServiceTest {
                 .build();
 
         // When
-        when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
-        when(hotelRepository.findById(hotelId)).thenReturn(Optional.empty());
+        when(entityLoader.findCustumerEntityById(customerId)).thenReturn(customer);
+        when(entityLoader.findHotelEntityById(hotelId))
+                .thenThrow(new EntityNotFoundException("Hotel not Found"));
 
         // Then
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
@@ -297,7 +312,7 @@ public class TourServiceTest {
                 .build();
 
         // When
-        when(tourRepository.findById(tourId)).thenReturn(Optional.of(tourEntity));
+        when(entityLoader.findTourEntityById(tourId)).thenReturn(tourEntity);
 
         // Execute
         ApiResponseDto<Void> result = tourService.delete(tourId);
@@ -308,7 +323,7 @@ public class TourServiceTest {
         assertEquals("Tour deleted successfully", result.getMessage());
 
         // Verify interactions
-        verify(tourRepository).findById(tourId);
+        verify(entityLoader).findTourEntityById(tourId);
         verify(tourRepository).delete(tourEntity);
     }
 
@@ -318,7 +333,8 @@ public class TourServiceTest {
         Long nonExistentId = 999L;
 
         // When
-        when(tourRepository.findById(nonExistentId)).thenReturn(Optional.empty());
+        when(entityLoader.findTourEntityById(nonExistentId))
+                .thenThrow(new EntityNotFoundException("Tour not found"));
 
         // Then
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
@@ -408,8 +424,8 @@ public class TourServiceTest {
                 .build();
 
         // When
-        when(tourRepository.findById(tourId)).thenReturn(Optional.of(tourEntity));
-        when(flyRepository.findById(flyId)).thenReturn(Optional.of(fly));
+        when(entityLoader.findTourEntityById(tourId)).thenReturn(tourEntity);
+        when(entityLoader.findFlyEntityById(flyId)).thenReturn(fly);
         when(tourHelper.createTickets(any(), any())).thenReturn(newTickets);
         when(tourRepository.save(any(TourEntity.class))).thenReturn(updatedTourEntity);
         when(tourMapper.toTourResponseDto(updatedTourEntity)).thenReturn(tourResponseDto);
@@ -427,8 +443,8 @@ public class TourServiceTest {
         assertEquals(tourEntity, newTicket.getTour(), "El ticket no tiene asignado el tour correctamente");
 
         // Verify interactions
-        verify(tourRepository).findById(tourId);
-        verify(flyRepository).findById(flyId);
+        verify(entityLoader).findTourEntityById(tourId);
+        verify(entityLoader).findFlyEntityById(flyId);
         verify(tourHelper).createTickets(any(), any());
         verify(tourRepository).save(any(TourEntity.class));
         verify(tourMapper).toTourResponseDto(updatedTourEntity);
@@ -441,7 +457,8 @@ public class TourServiceTest {
         Long flyId = 1L;
 
         // When
-        when(tourRepository.findById(tourId)).thenReturn(Optional.empty());
+        when(entityLoader.findTourEntityById(tourId))
+                .thenThrow(new EntityNotFoundException("Tour not found"));
 
         // Then
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
@@ -465,8 +482,9 @@ public class TourServiceTest {
                 .build();
 
         // When
-        when(tourRepository.findById(tourId)).thenReturn(Optional.of(tourEntity));
-        when(flyRepository.findById(flyId)).thenReturn(Optional.empty());
+        when(entityLoader.findTourEntityById(tourId)).thenReturn(tourEntity);
+        when(entityLoader.findFlyEntityById(flyId))
+                .thenThrow(new EntityNotFoundException("Fly not found"));
 
         // Then
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
@@ -480,7 +498,8 @@ public class TourServiceTest {
     void read_shouldThrowEntityNotFoundException_whenTourNotFound() {
         // Given
         Long tourId = 1L;
-        when(tourRepository.findById(tourId)).thenReturn(Optional.empty());
+        when(entityLoader.findTourEntityById(tourId))
+                .thenThrow(new EntityNotFoundException("Tour not found"));
 
         // When & Then
         assertThrows(EntityNotFoundException.class, () -> tourService.read(tourId));
@@ -560,8 +579,8 @@ public class TourServiceTest {
                 .data(tourResponseDto)
                 .build();
 
-        // Mocking repository and mapper behavior
-        when(tourRepository.findById(tourId)).thenReturn(Optional.of(tour));
+        // Mocking entityLoader and mapper behavior
+        when(entityLoader.findTourEntityById(tourId)).thenReturn(tour);
         when(tourMapper.toTourResponseDto(tour)).thenReturn(tourResponseDto);
         // When - Calling the read method
         ApiResponseDto<TourResponseDto> result = tourService.read(tourId);
@@ -573,7 +592,7 @@ public class TourServiceTest {
         assertEquals(expectedResponse.getData().getTicketsIds(), result.getData().getTicketsIds());
         assertEquals(expectedResponse.getData().getReservationIds(), result.getData().getReservationIds());
         // Verifying interactions
-        verify(tourRepository).findById(tourId);
+        verify(entityLoader).findTourEntityById(tourId);
         verify(tourMapper).toTourResponseDto(tour);
         // Verifying that the tour was found and mapped correctly
         assertTrue(result.getData().getTicketsIds().contains(ticket.getId()));
@@ -591,7 +610,8 @@ public class TourServiceTest {
         // Given
         Long tourId = 1L;
         TourRequestDto request = TourRequestDto.builder().build();
-        when(tourRepository.findById(tourId)).thenReturn(Optional.empty());
+        when(entityLoader.findTourEntityById(tourId))
+                .thenThrow(new EntityNotFoundException("Tour not found"));
 
         // When & Then
         assertThrows(EntityNotFoundException.class, () -> tourService.update(tourId, request));
@@ -609,8 +629,9 @@ public class TourServiceTest {
                 .build();
 
         TourEntity tourEntity = TourEntity.builder().id(tourId).build();
-        when(tourRepository.findById(tourId)).thenReturn(Optional.of(tourEntity));
-        when(customerRepository.findById(customerId)).thenReturn(Optional.empty());
+        when(entityLoader.findTourEntityById(tourId)).thenReturn(tourEntity);
+        when(entityLoader.findCustumerEntityById(customerId))
+                .thenThrow(new EntityNotFoundException("Customer not found"));
 
         // When & Then
         assertThrows(EntityNotFoundException.class, () -> tourService.update(tourId, request));
@@ -638,9 +659,10 @@ public class TourServiceTest {
         TourEntity tourEntity = TourEntity.builder().id(tourId).build();
         CustomerEntity customer = CustomerEntity.builder().dni(customerId).build();
 
-        when(tourRepository.findById(tourId)).thenReturn(Optional.of(tourEntity));
-        when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
-        when(flyRepository.findById(flyId)).thenReturn(Optional.empty());
+        when(entityLoader.findTourEntityById(tourId)).thenReturn(tourEntity);
+        when(entityLoader.findCustumerEntityById(customerId)).thenReturn(customer);
+        when(entityLoader.findFlyEntityById(flyId))
+                .thenThrow(new EntityNotFoundException("Fly not found"));
 
         // When & Then
         assertThrows(EntityNotFoundException.class, () -> tourService.update(tourId, request));
@@ -669,9 +691,10 @@ public class TourServiceTest {
         TourEntity tourEntity = TourEntity.builder().id(tourId).build();
         CustomerEntity customer = CustomerEntity.builder().dni(customerId).build();
 
-        when(tourRepository.findById(tourId)).thenReturn(Optional.of(tourEntity));
-        when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
-        when(hotelRepository.findById(hotelId)).thenReturn(Optional.empty());
+        when(entityLoader.findTourEntityById(tourId)).thenReturn(tourEntity);
+        when(entityLoader.findCustumerEntityById(customerId)).thenReturn(customer);
+        when(entityLoader.findHotelEntityById(hotelId))
+                .thenThrow(new EntityNotFoundException("Hotel not Found"));
 
         // When & Then
         assertThrows(EntityNotFoundException.class, () -> tourService.update(tourId, request));
@@ -849,14 +872,14 @@ public class TourServiceTest {
                 .data(tourResponseDto)
                 .build();
 
-        // Mocking repository and mapper behavior
-        when(tourRepository.findById(tourId)).thenReturn(Optional.of(tourWhitFindId));
-        when(customerRepository.findById(customerId)).thenReturn(Optional.of(customerUpdate));
-        when(flyRepository.findById(flyId)).thenReturn(Optional.of(flyUpdate));
-        when(hotelRepository.findById(hotelId)).thenReturn(Optional.of(hotelUpdate));
+        // Mocking entityLoader and other dependencies
+        when(entityLoader.findTourEntityById(tourId)).thenReturn(tourWhitFindId);
+        when(entityLoader.findCustumerEntityById(customerId)).thenReturn(customerUpdate);
+        when(entityLoader.findFlyEntityById(flyId)).thenReturn(flyUpdate);
+        when(entityLoader.findHotelEntityById(hotelId)).thenReturn(hotelUpdate);
         when(tourHelper.createTickets(any(), any())).thenReturn(ticketsUpdate);
         when(tourHelper.createReservations(any(), any())).thenReturn(reservationsUpdate);
-        when(tourRepository.save(any(TourEntity.class))).thenReturn(updatedTour);
+        when(tourEntityBuilder.tourEntityBuilderAndSave(any(), any(), any(), any())).thenReturn(updatedTour);
         when(tourMapper.toTourResponseDto(updatedTour)).thenReturn(tourResponseDto);
         // When - Calling the update method
         ApiResponseDto<TourResponseDto> result = tourService.update(tourId, request);
@@ -868,13 +891,13 @@ public class TourServiceTest {
         assertEquals(expectedResponse.getData().getTicketsIds(), result.getData().getTicketsIds());
         assertEquals(expectedResponse.getData().getReservationIds(), result.getData().getReservationIds());
         // Verifying interactions
-        verify(tourRepository).findById(tourId);
-        verify(customerRepository).findById(customerId);
-        verify(flyRepository).findById(flyId);
-        verify(hotelRepository).findById(hotelId);
+        verify(entityLoader).findTourEntityById(tourId);
+        verify(entityLoader).findCustumerEntityById(customerId);
+        verify(entityLoader).findFlyEntityById(flyId);
+        verify(entityLoader).findHotelEntityById(hotelId);
         verify(tourHelper).createTickets(any(), any());
         verify(tourHelper).createReservations(any(), any());
-        verify(tourRepository).save(any(TourEntity.class));
+        verify(tourEntityBuilder).tourEntityBuilderAndSave(any(), any(), any(), any());
         verify(tourMapper).toTourResponseDto(updatedTour);
         // Verifying that the tour was found and mapped correctly
         assertEquals(1, result.getData().getTicketsIds().size());
@@ -947,8 +970,8 @@ public class TourServiceTest {
                 .data(tourEntityDto)
                 .build();
 
-        // Mocking repository behavior
-        when(tourRepository.findById(tourId)).thenReturn(Optional.of(tourEntity));
+        // Mocking entityLoader and repository behavior
+        when(entityLoader.findTourEntityById(tourId)).thenReturn(tourEntity);
         when(tourRepository.save(any(TourEntity.class))).thenReturn(tourEntityWithTicket);
         when(tourMapper.toTourResponseDto(tourEntityWithTicket)).thenReturn(tourEntityDto);
         // When
@@ -962,7 +985,7 @@ public class TourServiceTest {
         assertEquals(1,result.getData().getTicketsIds().size());
         assertTrue(result.getData().getTicketsIds().contains(ticket2.getId()));
         // Verify interactions
-        verify(tourRepository).findById(tourId);
+        verify(entityLoader).findTourEntityById(tourId);
         verify(tourRepository, times(1)).save(any(TourEntity.class));
     }
 
@@ -973,7 +996,8 @@ public class TourServiceTest {
         Long tourId = 1L;
 
         // When
-        when(tourRepository.findById(tourId)).thenReturn(Optional.empty());
+        when(entityLoader.findTourEntityById(tourId))
+                .thenThrow(new EntityNotFoundException("Tour not found"));
 
         // Then
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
@@ -1010,7 +1034,7 @@ public class TourServiceTest {
                 .build();
 
         // When
-        when(tourRepository.findById(tourId)).thenReturn(Optional.of(tourEntity));
+        when(entityLoader.findTourEntityById(tourId)).thenReturn(tourEntity);
         when(tourRepository.save(any(TourEntity.class))).thenReturn(updatedTourEntity);
         when(tourMapper.toTourResponseDto(updatedTourEntity)).thenReturn(tourResponseDto);
 
@@ -1023,7 +1047,7 @@ public class TourServiceTest {
         assertEquals(tourResponseDto, result.getData());
 
         // Verify interactions
-        verify(tourRepository).findById(tourId);
+        verify(entityLoader).findTourEntityById(tourId);
         // The save method is called once in the implementation
         verify(tourRepository, times(1)).save(any(TourEntity.class));
         verify(tourMapper).toTourResponseDto(updatedTourEntity);
@@ -1072,8 +1096,8 @@ public class TourServiceTest {
                 .build();
 
         // Mock behavior
-        when(tourRepository.findById(tourId)).thenReturn(Optional.of(tourEntity));
-        when(reservationRepository.findById(reservationId)).thenReturn(Optional.of(reservation));
+        when(entityLoader.findTourEntityById(tourId)).thenReturn(tourEntity);
+        when(entityLoader.findReservationEntityById(reservationId)).thenReturn(reservation);
         when(tourRepository.save(any(TourEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(tourMapper.toTourResponseDto(any(TourEntity.class))).thenReturn(tourResponseDto);
 
@@ -1093,8 +1117,8 @@ public class TourServiceTest {
         assertEquals(tourEntity, reservation.getTour());
 
         // Verify mocks were called correctly
-        verify(tourRepository).findById(tourId);
-        verify(reservationRepository).findById(reservationId);
+        verify(entityLoader).findTourEntityById(tourId);
+        verify(entityLoader).findReservationEntityById(reservationId);
         verify(tourRepository).save(any(TourEntity.class));
         verify(tourMapper).toTourResponseDto(any(TourEntity.class));
     }
@@ -1115,8 +1139,9 @@ public class TourServiceTest {
                 .build();
 
         // When
-        when(tourRepository.findById(tourId)).thenReturn(Optional.of(tourEntity));
-        when(reservationRepository.findById(reservationId)).thenReturn(Optional.empty());
+        when(entityLoader.findTourEntityById(tourId)).thenReturn(tourEntity);
+        when(entityLoader.findReservationEntityById(reservationId))
+                .thenThrow(new EntityNotFoundException("Reservation not found"));
 
         // Then
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
@@ -1172,7 +1197,7 @@ public class TourServiceTest {
                 .data(tourResponseDto)
                 .build();
 
-        // Mocking repository behavior
+        // Mocking repository behavior (service uses tourRepository.findById directly)
         when(tourRepository.findById(tourId)).thenReturn(Optional.of(tourEntity));
         when(tourRepository.save(any(TourEntity.class))).thenReturn(tourEntityWithReservation);
         when(tourMapper.toTourResponseDto(tourEntityWithReservation)).thenReturn(tourResponseDto);
