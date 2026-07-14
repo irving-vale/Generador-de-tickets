@@ -14,6 +14,7 @@ import com.joirv.CursoSpringBoot.domain.entities.TourEntity;
 import com.joirv.CursoSpringBoot.domain.mappers.TourMapper;
 import com.joirv.CursoSpringBoot.domain.repositories.*;
 import com.joirv.CursoSpringBoot.infraestructure.helper.EntityLoader;
+import com.joirv.CursoSpringBoot.infraestructure.helper.CustumerIncreasTicketsAndReservations;
 import com.joirv.CursoSpringBoot.infraestructure.helper.TourEntityBuilder;
 import com.joirv.CursoSpringBoot.infraestructure.helper.TourHelper;
 import jakarta.persistence.EntityNotFoundException;
@@ -67,6 +68,9 @@ public class TourServiceTest {
 
     @Mock
     private TourEntityBuilder tourEntityBuilder;
+
+    @Mock
+    private CustumerIncreasTicketsAndReservations custumerIncreasTicketsAndReservations;
 
     @InjectMocks
     private TourService tourService;
