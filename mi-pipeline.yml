@@ -1,0 +1,30 @@
+name: Validacion de Codigo Base
+
+# 1. ¿Cuándo se va a encender el robot?
+on:
+  push:
+    branches: [ main, develop ] # Cada vez que hagas push a estas ramas
+  pull_request:
+    branches: [ main, develop ] # O cada vez que abras un Pull Request
+
+# 2. ¿Qué va a hacer el robot cuando se encienda?
+jobs:
+  compilar-y-probar:
+    runs-on: ubuntu-latest # Le pedimos a GitHub una máquina virtual con Linux limpia
+
+    steps:
+      # Paso A: El robot clona tu código dentro de su máquina virtual
+      - name: Descargar codigo del repositorio
+        uses: actions/checkout@v4
+
+      # Paso B: El robot instala Java 21 en su máquina virtual
+      - name: Instalar Java JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven' # Guarda en caché tus librerías para que sea ultra rápido
+
+      # Paso C: El robot corre tus comandos de Maven (compilar y ejecutar tus tests)
+      - name: Compilar y Ejecutar Pruebas Unitarias
+        run: mvn clean package
