@@ -13,7 +13,6 @@ import com.joirv.CursoSpringBoot.infraestructure.helper.TourEntityBuilder;
 import com.joirv.CursoSpringBoot.infraestructure.helper.TourHelper;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -147,7 +146,6 @@ public class TourService implements ITourService {
     }
 
 
-    // TODO: este methods debería de tener hotel y dias para poder crear la reservation hacer un methods helper en helper para crear la reservation, no se hizo por falta de tiempo dle curso pero se puede modificar cuando sea necesario
     @Override
     public ApiResponseDto<TourResponseDto> addReservation(UUID reservationId, Long tourId) {
         var tourEntity =this.entityLoader.findTourEntityById(tourId);

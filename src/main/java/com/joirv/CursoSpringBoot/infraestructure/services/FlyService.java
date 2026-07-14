@@ -21,7 +21,6 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
 
-import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
 @Transactional
@@ -127,7 +126,7 @@ public class FlyService implements IFlyService {
 		}
 		var flyEntity = flyRepository.findByPriceBetween(min, max).stream()
 				.map(flyMapper::toDto)
-				.collect(toList());
+				.toList();
 		log.info("Flys found between prices: {}", flyEntity);
 		if (flyEntity.isEmpty()) {
 			log.warn("No Flys found between prices: {} and {}", min, max);
@@ -222,16 +221,11 @@ public class FlyService implements IFlyService {
 		if (sortType == null) {
 			throw new IllegalArgumentException("sortType must not be null");
 		}
-		Sort sort = Sort.by("price");
-		if (sortType == SortType.LOWER) {
-			sort = sort.ascending();
-		} else if (sortType == SortType.UPPER) {
-			sort = sort.descending();
-		} else if (sortType == SortType.NONE) {
-			sort = Sort.unsorted();
-		} else {
-			throw new IllegalArgumentException("Unsupported SortType: " + sortType);
-		}
-		return sort;
+		Sort base = Sort.by("price");
+		return switch (sortType) {
+			case LOWER -> base.ascending();
+			case UPPER -> base.descending();
+			case NONE -> Sort.unsorted();
+		};
 	}
 }

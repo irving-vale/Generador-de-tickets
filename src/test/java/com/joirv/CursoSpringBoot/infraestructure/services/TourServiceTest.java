@@ -40,7 +40,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.times;
 
 @ExtendWith(MockitoExtension.class)
-public class TourServiceTest {
+class TourServiceTest {
 
     @Mock
     private TourRepository tourRepository;

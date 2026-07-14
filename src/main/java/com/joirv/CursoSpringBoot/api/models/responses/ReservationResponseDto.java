@@ -1,7 +1,6 @@
 package com.joirv.CursoSpringBoot.api.models.responses;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.joirv.CursoSpringBoot.domain.entities.HotelEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

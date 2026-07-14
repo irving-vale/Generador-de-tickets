@@ -8,14 +8,11 @@ import com.joirv.CursoSpringBoot.api.models.responses.TourResponseDto;
 import com.joirv.CursoSpringBoot.domain.entities.*;
 import com.joirv.CursoSpringBoot.domain.mappers.TourMapper;
 import com.joirv.CursoSpringBoot.domain.repositories.*;
-import com.joirv.CursoSpringBoot.infraestructure.abstract_services.ITourService;
 import com.joirv.CursoSpringBoot.infraestructure.helper.EntityLoader;
 import com.joirv.CursoSpringBoot.infraestructure.helper.CustumerIncreasTicketsAndReservations;
 import com.joirv.CursoSpringBoot.infraestructure.helper.TourEntityBuilder;
 import com.joirv.CursoSpringBoot.infraestructure.helper.TourHelper;
 import com.joirv.CursoSpringBoot.util.AeroLinea;
-import jakarta.persistence.EntityNotFoundException;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -36,7 +33,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class TourServiceSpringTest {
+class TourServiceSpringTest {
 
     @Mock
     private TourRepository tourRepository;
@@ -92,7 +89,7 @@ public class TourServiceSpringTest {
                 .id(flyId)
                 .originName("Origin")
                 .destinyName("Destiny")
-                .aeroLine(AeroLinea.aero_gold)
+                .aeroLine(AeroLinea.AERO_GOLD)
                 .price(BigDecimal.valueOf(100))
                 .build();
 
@@ -297,7 +294,7 @@ public class TourServiceSpringTest {
                 .id(flyId)
                 .originName("New Origin")
                 .destinyName("New Destiny")
-                .aeroLine(AeroLinea.aero_gold)
+                .aeroLine(AeroLinea.AERO_GOLD)
                 .price(BigDecimal.valueOf(200))
                 .build();
 
@@ -450,7 +447,7 @@ public class TourServiceSpringTest {
                 .id(flyId)
                 .originName("Origin")
                 .destinyName("Destiny")
-                .aeroLine(AeroLinea.aero_gold)
+                .aeroLine(AeroLinea.AERO_GOLD)
                 .price(BigDecimal.valueOf(100))
                 .build();
 
