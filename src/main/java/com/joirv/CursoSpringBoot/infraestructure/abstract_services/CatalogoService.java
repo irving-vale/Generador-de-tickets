@@ -2,11 +2,9 @@ package com.joirv.CursoSpringBoot.infraestructure.abstract_services;
 
 import com.joirv.CursoSpringBoot.api.models.responses.ApiResponseDto;
 import com.joirv.CursoSpringBoot.util.SortType;
-import org.springframework.data.domain.Page;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Set;
 
 public interface CatalogoService<R> {
 

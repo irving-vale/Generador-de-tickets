@@ -1,3 +1,3 @@
 package com.joirv.CursoSpringBoot.util;
 
-public enum AeroLinea {aero_gold,blue_sky}
+public enum AeroLinea {AERO_GOLD, BLUE_SKY}

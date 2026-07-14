@@ -12,7 +12,7 @@ import com.joirv.CursoSpringBoot.domain.repositories.TicketRepository;
 import com.joirv.CursoSpringBoot.infraestructure.abstract_services.ITicketService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -24,7 +24,7 @@ import java.util.UUID;
 @Transactional
 @Service
 @Slf4j
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class TicketService implements ITicketService {
 
     private final FlyRepository flyRepository;

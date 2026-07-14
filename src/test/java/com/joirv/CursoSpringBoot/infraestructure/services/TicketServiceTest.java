@@ -67,7 +67,7 @@ class TicketServiceTest {
 		        .originLng(-77.02824)
 		        .destinyLat(-13.53195)
 		        .destinyLng(-71.96746)
-		        .aeroLine(AeroLinea.aero_gold)
+		        .aeroLine(AeroLinea.AERO_GOLD)
 		        .build();
 
 		// 3. Simular cliente (como si viniera de la BD)
@@ -232,7 +232,7 @@ class TicketServiceTest {
 			        .originLng(-77.02824)
 			        .destinyLat(-13.53195)
 			        .destinyLng(-71.96746)
-			        .aeroLine(AeroLinea.aero_gold)
+			        .aeroLine(AeroLinea.AERO_GOLD)
 			        .build();
 			// 2. Simular el ticket que se va a actualizar
 			TicketEntity ticket= TicketEntity.builder()
@@ -253,7 +253,7 @@ class TicketServiceTest {
 			        .originLng(-77.02824)
 			        .destinyLat(-13.53195)
 			        .destinyLng(-71.96746)
-			        .aeroLine(AeroLinea.aero_gold)
+			        .aeroLine(AeroLinea.AERO_GOLD)
 			        .build();
 
 			CustomerEntity customer = CustomerEntity.builder()

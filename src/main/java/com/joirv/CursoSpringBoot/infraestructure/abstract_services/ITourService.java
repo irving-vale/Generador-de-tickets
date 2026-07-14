@@ -1,7 +1,5 @@
 package com.joirv.CursoSpringBoot.infraestructure.abstract_services;
 
-import com.joirv.CursoSpringBoot.api.models.request.TourFlyRequestDto;
-import com.joirv.CursoSpringBoot.api.models.request.TourHotelRequest;
 import com.joirv.CursoSpringBoot.api.models.request.TourRequestDto;
 import com.joirv.CursoSpringBoot.api.models.responses.ApiResponseDto;
 import com.joirv.CursoSpringBoot.api.models.responses.TourResponseDto;

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -30,8 +31,8 @@ public class TourHelper {
                     .fly(flight).customer(customer)
                     .price(calculatePriceWithTax(flight.getPrice()))
                     .purchaseDate(LocalDate.now())
-                    .arrivalDate(LocalDateTime.now())
-                    .departureDate(LocalDateTime.now())
+                    .arrivalDate(LocalDateTime.now(ZoneId.of("America/Mexico_City")))
+                    .departureDate(LocalDateTime.now(ZoneId.of("America/Mexico_City")))
                     .build();
             response.add(this.ticketRepository.save(ticket));
 
@@ -44,7 +45,7 @@ public class TourHelper {
         hotels.forEach((hotel, days) -> {
             var reservation = ReservationEntity.builder()
                     .id(UUID.randomUUID())
-                    .dateTimeReservation(LocalDateTime.now())
+                    .dateTimeReservation(LocalDateTime.now(ZoneId.of("America/Mexico_City")))
                     .dateStart(LocalDate.now())
                     .dateEnd(LocalDate.now().plusDays(days))
                     .totalDays(days)

@@ -6,6 +6,7 @@ import com.joirv.CursoSpringBoot.infraestructure.services.FlyService;
 import com.joirv.CursoSpringBoot.util.SortType;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -23,6 +24,7 @@ public class FlyController {
 	private final FlyService flyService;
 
 	@GetMapping("/findAll")
+	@PreAuthorize("hasAuthority('read')")
 	public ResponseEntity<ApiResponseDto<List<FlyResponseDto>>> findAllPagination(
 			@RequestParam Integer page, @RequestParam Integer size, @RequestParam(required = false) SortType sortType) {
 		if (sortType == null) {
@@ -32,6 +34,7 @@ public class FlyController {
 	}
 
 	@GetMapping("/readLessPrice")
+	@PreAuthorize("hasAuthority('read')")
 	public ResponseEntity<ApiResponseDto<List<FlyResponseDto>>> readLessPrice(@RequestParam Integer page, @RequestParam Integer size, @RequestParam(required = false) SortType sortType, @RequestParam BigDecimal price) {
 		if (sortType == null) {
 			sortType = SortType.NONE;
@@ -40,11 +43,13 @@ public class FlyController {
 	}
 
 	@GetMapping("/readBetweenPrice")
+	@PreAuthorize("hasAuthority('read')")
 	public ResponseEntity<ApiResponseDto<List<FlyResponseDto>>> readBetweenPrice(@RequestParam BigDecimal min,@RequestParam BigDecimal max) {
 		return ResponseEntity.ok(flyService.readBetweenPrice(min, max));
 	}
 
 	@GetMapping("/readByOriginDestiny")
+	@PreAuthorize("hasAuthority('read')")
 	public ResponseEntity<ApiResponseDto<Set<FlyResponseDto>>> readByOriginDestiny(@RequestParam String origin,@RequestParam String destiny) {
 		return ResponseEntity.ok(flyService.readByOriginDestiny(origin, destiny));
 	}

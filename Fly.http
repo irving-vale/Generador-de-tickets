@@ -9,6 +9,6 @@
 @page = 1
 @size = 100
 
-### PEticion Get ###
+### Peticion Get ###
 {{host}}/api/v1/fly/findAll?page={{page}}&size={{size}}
 Authorization: Basic {{user}} {{password}}

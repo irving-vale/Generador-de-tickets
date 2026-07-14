@@ -34,3 +34,5 @@ build/
 
 ### Proyecto ###
 .env
+.aider*
+.env

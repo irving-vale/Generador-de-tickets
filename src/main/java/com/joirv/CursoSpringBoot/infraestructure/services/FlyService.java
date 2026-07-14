@@ -9,7 +9,7 @@ import com.joirv.CursoSpringBoot.domain.repositories.FlyRepository;
 import com.joirv.CursoSpringBoot.infraestructure.abstract_services.IFlyService;
 import com.joirv.CursoSpringBoot.util.SortType;
 import jakarta.transaction.Transactional;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -21,26 +21,25 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
 
-import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
 @Transactional
 @Service
 @Slf4j
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class FlyService implements IFlyService {
-
 
 	private final FlyRepository flyRepository;
 	private final FlyMapper flyMapper;
 
 	@Override
 	public ApiResponseDto<List<FlyResponseDto>> findAllPagination(Integer page, Integer size, SortType sortType) {
-	Sort sortValue =sort(sortType);
+		validatePaginationParams(page, size, sortType);
+		Sort sortValue = sort(sortType);
 
-		Pageable pageable = PageRequest.of(page - 1, size, sortValue );
+		Pageable pageable = PageRequest.of(page - 1, size, sortValue);
 		Page<FlyEntity> fly = flyRepository.findAll(pageable);
-		log.info("Vuelos obtenidos de la busqueda : {}",fly.getContent());
+		log.info("Vuelos obtenidos de la busqueda : {}", fly.getContent());
 		if (fly.isEmpty()) {
 			return ApiResponseDto.<List<FlyResponseDto>>builder()
 					.status("success")
@@ -63,23 +62,24 @@ public class FlyService implements IFlyService {
 				.status("success")
 				.message("Flys retrieved successfully")
 				.data(flyToDto.getContent())
-		        		.statusCode(200)
-		       		 .meta(Meta.builder()
-			      		.totalItems(flyToDto.getTotalElements())
-			     		 .totalPages(flyToDto.getTotalPages())
-				           .currentPage(flyToDto.getNumber())
-			     		 .pageSize(flyToDto.getSize())
-					.build())
-		        		.build();
-
+				.statusCode(200)
+				.meta(Meta.builder()
+						.totalItems(flyToDto.getTotalElements())
+						.totalPages(flyToDto.getTotalPages())
+						.currentPage(flyToDto.getNumber())
+						.pageSize(flyToDto.getSize())
+						.build())
+				.build();
 	}
 
-
-
 	@Override
-	public ApiResponseDto<List<FlyResponseDto>> readLessPrice(Integer page, Integer size, SortType sortType,BigDecimal price) {
-		Sort sortValue =sort(sortType);
-		Pageable pageable = PageRequest.of(page - 1, size, sortValue );
+	public ApiResponseDto<List<FlyResponseDto>> readLessPrice(Integer page, Integer size, SortType sortType, BigDecimal price) {
+		validatePaginationParams(page, size, sortType);
+		if (price == null) {
+			throw new IllegalArgumentException("price must not be null");
+		}
+		Sort sortValue = sort(sortType);
+		Pageable pageable = PageRequest.of(page - 1, size, sortValue);
 		var flyCheap = flyRepository.findByPriceLessThanEqual(pageable, price);
 		if (flyCheap.isEmpty()) {
 			log.warn("No Flys found with price less than or equal to: {}", price);
@@ -99,7 +99,7 @@ public class FlyService implements IFlyService {
 		log.info("Flys retrieved successfully with price less than or equal to: {}", price);
 		Page<FlyResponseDto> flyToDto = flyCheap.map(flyMapper::toDto);
 		log.info("Flys converted to DTOs successfully: {}", flyToDto);
-				return ApiResponseDto.<List<FlyResponseDto>>builder()
+		return ApiResponseDto.<List<FlyResponseDto>>builder()
 				.status("success")
 				.message("Flys retrieved successfully with price less than or equal to " + price)
 				.data(flyToDto.getContent())
@@ -111,15 +111,22 @@ public class FlyService implements IFlyService {
 						.pageSize(flyToDto.getSize())
 						.build())
 				.build();
-
 	}
-
 
 	@Override
 	public ApiResponseDto<List<FlyResponseDto>> readBetweenPrice(BigDecimal min, BigDecimal max) {
+		if (min == null) {
+			throw new IllegalArgumentException("min price must not be null");
+		}
+		if (max == null) {
+			throw new IllegalArgumentException("max price must not be null");
+		}
+		if (min.compareTo(max) > 0) {
+			throw new IllegalArgumentException("min price must be less than or equal to max price");
+		}
 		var flyEntity = flyRepository.findByPriceBetween(min, max).stream()
-		        .map(flyMapper::toDto)
-			      .collect(toList());
+				.map(flyMapper::toDto)
+				.toList();
 		log.info("Flys found between prices: {}", flyEntity);
 		if (flyEntity.isEmpty()) {
 			log.warn("No Flys found between prices: {} and {}", min, max);
@@ -151,59 +158,74 @@ public class FlyService implements IFlyService {
 				.build();
 	}
 
-
 	@Override
 	public ApiResponseDto<Set<FlyResponseDto>> readByOriginDestiny(String origin, String destiny) {
-		String originUpper = origin.substring(0,1).toUpperCase() + origin.substring(1).toLowerCase();
-		String destinyUpper = destiny.substring(0,1).toUpperCase() + destiny.substring(1).toLowerCase();
+		if (origin == null || origin.isBlank()) {
+			throw new IllegalArgumentException("origin must not be null or blank");
+		}
+		if (destiny == null || destiny.isBlank()) {
+			throw new IllegalArgumentException("destiny must not be null or blank");
+		}
+		String originTrimmed = origin.trim();
+		String destinyTrimmed = destiny.trim();
+		String originUpper = originTrimmed.substring(0, 1).toUpperCase() + originTrimmed.substring(1).toLowerCase();
+		String destinyUpper = destinyTrimmed.substring(0, 1).toUpperCase() + destinyTrimmed.substring(1).toLowerCase();
 		var fly = flyRepository.findByOriginNameAndDestinyName(originUpper, destinyUpper)
 				.stream()
 				.map(flyMapper::toDto)
 				.collect(toSet());
-		log.info("Flys found with origin: {}", fly );
+		log.info("Flys found with origin: {}", fly);
 		if (fly.isEmpty()) {
 			log.warn("No Flys found with origin: {} and destiny: {}", originUpper, destinyUpper);
 			return ApiResponseDto.<Set<FlyResponseDto>>builder()
-			        .status("success")
-			        .message("No Flys found with origin: " + origin + " and destiny: " + destiny)
-			        .data(Set.of())
-			        .statusCode(200)
-			        .meta(Meta.builder()
-				      .totalItems(0L)
-				      .totalPages(0)
-				      .currentPage(0)
-				      .pageSize(0)
-				      .build())
-			        .build();
-
+					.status("success")
+					.message("No Flys found with origin: " + origin + " and destiny: " + destiny)
+					.data(Set.of())
+					.statusCode(200)
+					.meta(Meta.builder()
+							.totalItems(0L)
+							.totalPages(0)
+							.currentPage(0)
+							.pageSize(0)
+							.build())
+					.build();
 		}
 		log.info("Flys found with origin: {} and destiny: {}", originUpper, destinyUpper);
 		return ApiResponseDto.<Set<FlyResponseDto>>builder()
-		        .status("success")
-		        .message("Flys found with origin: " + originUpper + " and destiny: " + destinyUpper)
-		        .data(fly)
-		        .statusCode(200)
-		        .meta(Meta.builder()
-			      .totalItems((long) fly.size())
-			      .totalPages(1)
-			      .currentPage(1)
-			      .pageSize(1)
-			      .build())
-		        .build();
+				.status("success")
+				.message("Flys found with origin: " + originUpper + " and destiny: " + destinyUpper)
+				.data(fly)
+				.statusCode(200)
+				.meta(Meta.builder()
+						.totalItems((long) fly.size())
+						.totalPages(1)
+						.currentPage(1)
+						.pageSize(1)
+						.build())
+				.build();
 	}
 
-
-	// metodo para ordenar los resultados de la consulta
-	private Sort sort(SortType sortType) {
-		Sort sort = Sort.by("price");
-		if (sortType == SortType.LOWER) {
-			sort = sort.ascending();
-		} else if (sortType == SortType.UPPER) {
-			sort = sort.descending();
-		} else if (sortType == SortType.NONE) {
-			sort = Sort.unsorted();
+	private void validatePaginationParams(Integer page, Integer size, SortType sortType) {
+		if (page == null || page < 1) {
+			throw new IllegalArgumentException("page must be >= 1");
 		}
-		return sort;
+		if (size == null || size < 1) {
+			throw new IllegalArgumentException("size must be >= 1");
+		}
+		if (sortType == null) {
+			throw new IllegalArgumentException("sortType must not be null");
+		}
 	}
 
+	private Sort sort(SortType sortType) {
+		if (sortType == null) {
+			throw new IllegalArgumentException("sortType must not be null");
+		}
+		Sort base = Sort.by("price");
+		return switch (sortType) {
+			case LOWER -> base.ascending();
+			case UPPER -> base.descending();
+			case NONE -> Sort.unsorted();
+		};
+	}
 }
