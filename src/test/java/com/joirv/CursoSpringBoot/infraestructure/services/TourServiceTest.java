@@ -13,6 +13,7 @@ import com.joirv.CursoSpringBoot.domain.entities.TicketEntity;
 import com.joirv.CursoSpringBoot.domain.entities.TourEntity;
 import com.joirv.CursoSpringBoot.domain.mappers.TourMapper;
 import com.joirv.CursoSpringBoot.domain.repositories.*;
+import com.joirv.CursoSpringBoot.infraestructure.helper.EntityLoader;
 import com.joirv.CursoSpringBoot.infraestructure.helper.TourHelper;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.Test;
@@ -56,6 +57,9 @@ public class TourServiceTest {
 
     @Mock
     private TourMapper tourMapper;
+
+    @Mock
+    private EntityLoader entityLoader;
 
     @Mock
     private ReservationRepository reservationRepository;

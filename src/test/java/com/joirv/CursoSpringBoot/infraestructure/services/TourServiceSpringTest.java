@@ -9,6 +9,7 @@ import com.joirv.CursoSpringBoot.domain.entities.*;
 import com.joirv.CursoSpringBoot.domain.mappers.TourMapper;
 import com.joirv.CursoSpringBoot.domain.repositories.*;
 import com.joirv.CursoSpringBoot.infraestructure.abstract_services.ITourService;
+import com.joirv.CursoSpringBoot.infraestructure.helper.EntityLoader;
 import com.joirv.CursoSpringBoot.infraestructure.helper.TourHelper;
 import com.joirv.CursoSpringBoot.util.AeroLinea;
 import jakarta.persistence.EntityNotFoundException;
@@ -61,6 +62,9 @@ public class TourServiceSpringTest {
 
     @InjectMocks
     private TourService tourService;
+
+    @Mock
+    private EntityLoader entityLoader;
 
     @Test
     void testCreateTour() {

@@ -12,6 +12,25 @@ jobs:
   compilar-y-probar:
     runs-on: ubuntu-latest # Le pedimos a GitHub una máquina virtual con Linux limpia
 
+    # 💾 Levantamos la base de datos Postgres temporal en la nube de GitHub
+    services:
+        postgres:
+          image: postgres:15
+          env:
+            POSTGRES_DB: best_travel
+            POSTGRES_USER: alejandro
+            POSTGRES_PASSWORD: debuggeandoideas
+          ports:
+            - 5432:5432
+          # Esperar a que postgres esté listo antes de arrancar los pasos
+          options: >-
+            --health-cmd pg_isready
+            --health-interval 10s
+            --health-timeout 5s
+            --health-retries 5
+
+    
+
     steps:
       # Paso A: El robot clona tu código dentro de su máquina virtual
       - name: Descargar codigo del repositorio
@@ -28,3 +47,4 @@ jobs:
       # Paso C: El robot corre tus comandos de Maven (compilar y ejecutar tus tests)
       - name: Compilar y Ejecutar Pruebas Unitarias
         run: mvn clean package
+
