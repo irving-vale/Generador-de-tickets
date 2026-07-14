@@ -9,6 +9,7 @@ import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
 import java.math.BigDecimal;
@@ -18,6 +19,9 @@ import java.util.Set;
 public interface FlyRepository extends JpaRepository<FlyEntity,Long> {
 
 	Page<FlyEntity> findAll(Pageable pageable);
+
+	@Query(value = "SELECT f FROM fly f LEFT JOIN FETCH f.tickets",countQuery = "SELECT COUNT(f) FROM fly f")
+	Page<FlyEntity> findAllMejorado(Pageable pageable);
 
 	Page<FlyEntity> findByPriceLessThanEqual(Pageable pageable,BigDecimal price );
 

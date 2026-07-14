@@ -24,7 +24,8 @@ public class TicketEntity implements Serializable {
 	private LocalDateTime arrivalDate;
 	private LocalDate purchaseDate;
 	private BigDecimal price;
-	@ManyToOne
+
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "fly_id")
 	private FlyEntity fly;
 

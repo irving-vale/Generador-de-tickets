@@ -14,6 +14,7 @@ import com.joirv.CursoSpringBoot.infraestructure.helper.TourHelper;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -23,7 +24,7 @@ import java.util.UUID;
 
 @Transactional
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class TourService implements ITourService {
 
     private final TourRepository tourRepository;
