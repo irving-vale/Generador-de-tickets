@@ -1,14 +1,11 @@
 package com.joirv.CursoSpringBoot.api.models.request;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.io.Serializable;
 
 @NoArgsConstructor
-@Data
+@Getter
 @AllArgsConstructor
 @Builder
 public class TourFlyRequestDto implements Serializable {
