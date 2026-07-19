@@ -1,10 +1,9 @@
 package com.joirv.CursoSpringBoot.domain.entities;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
+import java.util.Set;
 
 @Entity
 @Table(name = "users")
@@ -23,5 +22,15 @@ public class UsersEntity {
     private String pwd;
     @Column(name = "role")
     private String role;
+    @OneToMany(mappedBy = "user_id"
+    , cascade = CascadeType.ALL
+    , orphanRemoval = true
+    , fetch = FetchType.LAZY)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private Set<AuthoritiesEntity> authorities;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "role_id", nullable = false)
+    private RolesEntity roles;
 
 }

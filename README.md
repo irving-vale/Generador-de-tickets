@@ -231,8 +231,8 @@ Migraciones actuales:
 ```
 V1__Create_schema.sql
 V2__Insert_data.sql
-V3__create_user_table.sql
-V4__insert_data_user_table.sql
+V4__create_user_table.sql
+V6__insert_data_user_table.sql
 ```
 
 Principales entidades:
