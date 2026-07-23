@@ -6,6 +6,7 @@ import java.io.Serializable;
 
 @NoArgsConstructor
 @Getter
+@Setter
 @AllArgsConstructor
 @Builder
 public class TourFlyRequestDto implements Serializable {
