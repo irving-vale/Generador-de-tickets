@@ -1,31 +1,26 @@
 name: Validacion de Codigo Base
 
-# 1. ¿Cuándo se va a encender el robot?
 on:
   push:
-    branches: [ main, develop ] # Cada vez que hagas push a estas ramas
+    branches: [ main, develop ]
   pull_request:
-    branches: [ main, develop ] # O cada vez que abras un Pull Request
+    branches: [ main, develop ]
 
-# 2. ¿Qué va a hacer el robot cuando se encienda?
 jobs:
   compilar-y-probar:
-    runs-on: ubuntu-latest # Le pedimos a GitHub una máquina virtual con Linux limpia
+    runs-on: ubuntu-latest
 
     steps:
-      # Paso A: El robot clona tu código dentro de su máquina virtual
       - name: Descargar codigo del repositorio
         uses: actions/checkout@v4
 
-      # Paso B: El robot instala Java 21 en su máquina virtual
       - name: Instalar Java JDK 21
         uses: actions/setup-java@v4
         with:
           java-version: '21'
           distribution: 'temurin'
-          cache: 'maven' # Guarda en caché tus librerías para que sea ultra rápido
+          cache: 'maven'
 
-      # 🚀 Compila, genera el reporte de JaCoCo y manda la cobertura a SonarCloud
       - name: Compilar, Probar y Analizar con Sonar
         run: >
           mvn clean verify sonar:sonar 

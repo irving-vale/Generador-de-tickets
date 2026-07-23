@@ -5,6 +5,7 @@ import com.joirv.CursoSpringBoot.api.models.responses.FlyResponseDto;
 import com.joirv.CursoSpringBoot.infraestructure.services.FlyService;
 import com.joirv.CursoSpringBoot.util.SortType;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,7 +19,7 @@ import java.util.Set;
 
 @RestController
 @RequestMapping("/api/v1/fly")
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class FlyController {
 
 	private final FlyService flyService;

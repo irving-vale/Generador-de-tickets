@@ -1,0 +1,21 @@
+# ==========================================
+# 1. DEFINICIÓN DE VARIABLES GLOBALES
+# ==========================================
+@hostname = localhost
+@port = 8080
+@host = http://{{hostname}}:{{port}}
+@email = joirv.valencia@prueba.com
+@password = Isabella27
+@ROLE_USER = read
+@page = 1
+@size = 100
+
+### Peticion Post ###
+POST {{host}}/api/v1/users/create
+Content-Type: application/json
+
+{
+  "email":"{{email}}",
+  "pwd": "{{password}}",
+  "role":"{{ROLE_USER}}"
+}
