@@ -11,7 +11,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -35,7 +37,25 @@ public class TicketsGenerationUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         UsersEntity users = userRepository.findByEmail(username)
                 .orElseThrow(()-> new UsernameNotFoundException("User details not found the user:" + username));
-        List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(users.getRole()));
-        return new User(users.getEmail(),users.getPwd(),authorities);
+
+//        List<GrantedAuthority> authorities = users.getRoles()
+//                .stream()
+//                .flatMap(role -> role.getAuthorities().stream())
+//                .map(authority -> (GrantedAuthority) new SimpleGrantedAuthority(
+//                        authority.getAuthorityName()
+//                )).toList();
+
+      List <GrantedAuthority> authorities = users.getRoles().getAuthorities()
+              .stream()
+              .map(authority -> (GrantedAuthority) new SimpleGrantedAuthority(
+                      authority.getAuthorityName()
+              )).toList();
+
+        return User.withUsername(users.getEmail())
+                .password(users.getPwd())
+                .authorities(authorities)
+                .disabled(!users.getEnabled())
+                .build();
+
     }
 }

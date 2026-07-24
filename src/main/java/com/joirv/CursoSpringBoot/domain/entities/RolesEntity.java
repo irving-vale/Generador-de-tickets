@@ -6,7 +6,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Entity
+import java.util.HashSet;
+import java.util.Set;
+
+@Entity(name = "roles")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -16,5 +19,14 @@ public class RolesEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(length = 50, nullable = false)
-    private String name;
+    private String roleName;
+
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "role_authorities"
+            , joinColumns = @JoinColumn(name = "roles_id")
+            , inverseJoinColumns = @JoinColumn(name = "authorities_id")
+    )
+    private Set<AuthoritiesEntity> authorities= new HashSet<>();
 }

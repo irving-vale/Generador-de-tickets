@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Set;
+
 @Entity(name = "authorities")
 @AllArgsConstructor
 @NoArgsConstructor
@@ -16,10 +18,8 @@ public class AuthoritiesEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(length = 50, nullable = false , name = "authority_name")
+    private String authorityName;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private UsersEntity user_id;
-    @Column(length = 50)
-    private String name;
+
 }

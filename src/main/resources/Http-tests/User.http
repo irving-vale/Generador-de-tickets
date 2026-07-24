@@ -6,7 +6,7 @@
 @host = http://{{hostname}}:{{port}}
 @email = joirv.valencia@prueba.com
 @password = Isabella27
-@ROLE_USER = read
+@ROLE_USER = 3
 @page = 1
 @size = 100
 
@@ -17,5 +17,6 @@ Content-Type: application/json
 {
   "email":"{{email}}",
   "pwd": "{{password}}",
+  "enabled": true,
   "role":"{{ROLE_USER}}"
 }
