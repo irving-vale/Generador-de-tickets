@@ -1,5 +1,6 @@
 package com.joirv.CursoSpringBoot.infraestructure.security;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -9,6 +10,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 
 import java.util.List;
@@ -18,7 +20,10 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(securedEnabled = true)
+@RequiredArgsConstructor
 public class SpringBootWebSecurityConfiguration {
+
+    private final JwtCustomerFilter jwtCustomerFilter;
 
     @Bean
    SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -39,9 +44,9 @@ public class SpringBootWebSecurityConfiguration {
        http.authorizeHttpRequests((requests) -> requests
                .requestMatchers(HttpMethod.GET,"/api/v1/fly/**").hasAuthority("read")
                .requestMatchers("/error").permitAll()
-               .requestMatchers(HttpMethod.POST,"/api/v1/users/create").permitAll().anyRequest().authenticated());
-       http.formLogin(flc ->flc.disable());
-       http.httpBasic(withDefaults());
+                       .requestMatchers(HttpMethod.POST,"/api/v1/auth/login").permitAll()
+               .requestMatchers(HttpMethod.POST,"/api/v1/users/create").permitAll().anyRequest().authenticated())
+                       .addFilterBefore(jwtCustomerFilter, UsernamePasswordAuthenticationFilter.class);
        return http.build();
    }
 
@@ -50,7 +55,7 @@ public class SpringBootWebSecurityConfiguration {
         return new BCryptPasswordEncoder();
     }*/
 
-
+//Para Registrar Usuarios
     @Bean
     public PasswordEncoder passwordEncoder(){
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
