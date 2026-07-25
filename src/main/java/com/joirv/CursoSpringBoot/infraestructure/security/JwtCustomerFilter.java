@@ -7,6 +7,10 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -17,6 +21,8 @@ import java.io.IOException;
 public class JwtCustomerFilter extends OncePerRequestFilter {
 
     private final ObjectMapper objectMapper;
+    private final JwtService jwtService;
+    private final UserDetailsService userDetailsService;
 
 
     /**
@@ -47,6 +53,35 @@ public class JwtCustomerFilter extends OncePerRequestFilter {
            return;
        }
 
+       String token = authorizationHeader.substring(7);
+       String username = jwtService.extractUsername(token);
+
+       if(username != null && SecurityContextHolder.getContext().getAuthentication() == null){
+
+           UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
+           if(jwtService.isTokenValid(token,userDetails)){
+
+               UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+               SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+           }
+       }
+
        filterChain.doFilter(request, response);
+    }
+
+    /**
+     * Can be overridden in subclasses for custom filtering control,
+     * returning {@code true} to avoid filtering of the given request.
+     * <p>The default implementation always returns {@code false}.
+     *
+     * @param request current HTTP request
+     * @return whether the given request should <i>not</i> be filtered
+     * @throws ServletException in case of errors
+     */
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String path = request.getServletPath();
+        return path.startsWith("/api/v1/auth/login") || path.startsWith("api/v1/users/create") || path.startsWith("/error");
     }
 }
