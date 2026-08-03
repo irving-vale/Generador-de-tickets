@@ -4,11 +4,11 @@
 @hostname = localhost
 @port = 8080
 @host = http://{{hostname}}:{{port}}
-@user = {{username}}
-@password = {{password}}
 @page = 1
 @size = 100
 
-### Peticion Get ###
-{{host}}/api/v1/fly/findAll?page={{page}}&size={{size}}
-Authorization: Basic {{user}} {{password}}
+
+
+### Petición GET Protegida ###
+GET {{host}}/api/v1/fly/findAll?page={{page}}&size={{size}}
+Authorization: Bearer {{authToken}}

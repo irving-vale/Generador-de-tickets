@@ -38,38 +38,41 @@ public class FlyService implements IFlyService {
 		Sort sortValue = sort(sortType);
 
 		Pageable pageable = PageRequest.of(page - 1, size, sortValue);
-		Page<FlyEntity> fly = flyRepository.findAll(pageable);
-		log.info("Vuelos obtenidos de la busqueda : {}", fly.getContent());
-		if (fly.isEmpty()) {
+		try {
+			Page<FlyEntity> fly = flyRepository.findAll(pageable);
+			if (fly.isEmpty()) {
+				return ApiResponseDto.<List<FlyResponseDto>>builder()
+						.status("success")
+						.message("No Flys found")
+						.data(List.of())
+						.statusCode(200)
+						.meta(Meta.builder()
+								.totalItems(0L)
+								.totalPages(0)
+								.currentPage(page - 1)
+								.pageSize(size)
+								.build())
+						.build();
+			}
+			Page<FlyResponseDto> flyToDto = fly.map(flyMapper::toDto);
+
 			return ApiResponseDto.<List<FlyResponseDto>>builder()
 					.status("success")
-					.message("No Flys found")
-					.data(List.of())
+					.message("Flys retrieved successfully")
+					.data(flyToDto.getContent())
 					.statusCode(200)
 					.meta(Meta.builder()
-							.totalItems(0L)
-							.totalPages(0)
-							.currentPage(page - 1)
-							.pageSize(size)
+							.totalItems(flyToDto.getTotalElements())
+							.totalPages(flyToDto.getTotalPages())
+							.currentPage(flyToDto.getNumber())
+							.pageSize(flyToDto.getSize())
 							.build())
 					.build();
-		}
-		log.info("Flys retrieved successfully: {}", fly.getNumberOfElements());
-		Page<FlyResponseDto> flyToDto = fly.map(flyMapper::toDto);
-		log.info("Flys converted to DTOs successfully: {}", flyToDto.getContent());
+        } catch (Exception e) {
+            log.error("Error retrieving Flys:", e);
+            throw new RuntimeException("Error retrieving Flys", e);
+        }
 
-		return ApiResponseDto.<List<FlyResponseDto>>builder()
-				.status("success")
-				.message("Flys retrieved successfully")
-				.data(flyToDto.getContent())
-				.statusCode(200)
-				.meta(Meta.builder()
-						.totalItems(flyToDto.getTotalElements())
-						.totalPages(flyToDto.getTotalPages())
-						.currentPage(flyToDto.getNumber())
-						.pageSize(flyToDto.getSize())
-						.build())
-				.build();
 	}
 
 	@Override

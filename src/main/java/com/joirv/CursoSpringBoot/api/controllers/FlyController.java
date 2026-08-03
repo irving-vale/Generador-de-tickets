@@ -18,14 +18,14 @@ import java.util.List;
 import java.util.Set;
 
 @RestController
-@RequestMapping("/api/v1/fly")
+@RequestMapping("/fly")
 @RequiredArgsConstructor
 public class FlyController {
 
 	private final FlyService flyService;
 
 	@GetMapping("/findAll")
-	@PreAuthorize("hasAuthority('read')")
+	@PreAuthorize("hasAuthority('SCOPE_read')")
 	public ResponseEntity<ApiResponseDto<List<FlyResponseDto>>> findAllPagination(
 			@RequestParam Integer page, @RequestParam Integer size, @RequestParam(required = false) SortType sortType) {
 		if (sortType == null) {
@@ -35,7 +35,7 @@ public class FlyController {
 	}
 
 	@GetMapping("/readLessPrice")
-	@PreAuthorize("hasAuthority('read')")
+	@PreAuthorize("hasAuthority('SCOPE_read')")
 	public ResponseEntity<ApiResponseDto<List<FlyResponseDto>>> readLessPrice(@RequestParam Integer page, @RequestParam Integer size, @RequestParam(required = false) SortType sortType, @RequestParam BigDecimal price) {
 		if (sortType == null) {
 			sortType = SortType.NONE;
@@ -44,13 +44,13 @@ public class FlyController {
 	}
 
 	@GetMapping("/readBetweenPrice")
-	@PreAuthorize("hasAuthority('read')")
+	@PreAuthorize("hasAuthority('SCOPE_read')")
 	public ResponseEntity<ApiResponseDto<List<FlyResponseDto>>> readBetweenPrice(@RequestParam BigDecimal min,@RequestParam BigDecimal max) {
 		return ResponseEntity.ok(flyService.readBetweenPrice(min, max));
 	}
 
 	@GetMapping("/readByOriginDestiny")
-	@PreAuthorize("hasAuthority('read')")
+	@PreAuthorize("hasAuthority('SCOPE_read')")
 	public ResponseEntity<ApiResponseDto<Set<FlyResponseDto>>> readByOriginDestiny(@RequestParam String origin,@RequestParam String destiny) {
 		return ResponseEntity.ok(flyService.readByOriginDestiny(origin, destiny));
 	}

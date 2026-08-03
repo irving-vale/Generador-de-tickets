@@ -6,15 +6,17 @@
 @host = http://{{hostname}}:{{port}}
 @email = joirv.valencia@pruebajwt.com
 @password = Isabella27jwt
-@ROLE_USER = 1
 
 ### Peticion Post ###
-POST {{host}}/api/v1/users/create
+POST {{host}}/api/v1/auth/login
 Content-Type: application/json
 
 {
   "email":"{{email}}",
-  "pwd": "{{password}}",
-  "enabled": true,
-  "role":"{{ROLE_USER}}"
+  "pwd": "{{password}}"
 }
+> {%
+    // Captura el String de "data" y lo guarda en la variable global "authToken"
+    client.global.set("authToken", response.body.data);
+    client.log("¡Token guardado con éxito!: " + response.body.data);
+%}

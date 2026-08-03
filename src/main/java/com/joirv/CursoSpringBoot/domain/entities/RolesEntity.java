@@ -25,8 +25,8 @@ public class RolesEntity {
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "role_authorities"
-            , joinColumns = @JoinColumn(name = "roles_id")
-            , inverseJoinColumns = @JoinColumn(name = "authorities_id")
+            , joinColumns = @JoinColumn(name = "role_id")
+            , inverseJoinColumns = @JoinColumn(name = "authority_id")
     )
     private Set<AuthoritiesEntity> authorities= new HashSet<>();
 }

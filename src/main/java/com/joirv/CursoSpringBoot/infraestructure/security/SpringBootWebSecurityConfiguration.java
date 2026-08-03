@@ -49,10 +49,10 @@ public class SpringBootWebSecurityConfiguration {
 
         // CONFIGURATION OF AUTHORIZATION
        http.authorizeHttpRequests((requests) -> requests
-               .requestMatchers(HttpMethod.GET,"/api/v1/fly/**").hasAuthority("read")
+               .requestMatchers(HttpMethod.GET,"/fly/**").hasAuthority("SCOPE_read")
                .requestMatchers("/error").permitAll()
-                       .requestMatchers(HttpMethod.POST,"/api/v1/auth/login").permitAll()
-               .requestMatchers(HttpMethod.POST,"/api/v1/users/create").permitAll().anyRequest().authenticated())
+                       .requestMatchers(HttpMethod.POST,"/auth/login").permitAll()
+               .requestMatchers(HttpMethod.POST,"/users/create").permitAll().anyRequest().authenticated())
                        .addFilterBefore(jwtCustomerFilter, UsernamePasswordAuthenticationFilter.class);
        return http.build();
    }
